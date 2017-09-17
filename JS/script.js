@@ -157,7 +157,6 @@ d3.json(map110Url, function(error, world){
                             d.geometry.coordinates[1]]) + ')';
             }
         })
-        .attr("d", geoPath)
         /*.on("mouseover", function(d) {
           var dataPoint = "<div class='text-center'><strong>" +
                           d.properties.name + "</strong><br />" +
