@@ -35,8 +35,8 @@ var graticule = d3.geoGraticule();
 
 // Add group for land, water, and graticules (lon/lat lines)
 var g = svg.append("g").datum({
-  x: 0,
-  y: 0
+  x: width / 2,
+  y: height / 2
 });
 
 g.append("circle")
@@ -86,18 +86,15 @@ function updatePaths(svg, graticule, geoPath) {
 
   g.selectAll("circle.graticule-outline")
     .attr("r", projection.scale());
+
+  g.selectAll("circle.meteorite")
+    .attr("d", geoPath); // TODO: get meteorite strikes to rotate
 };
 
 
 // Tooltip and Meteor scales:
 var tooltip = d3.select('#tooltip')
-  .classed("tooltip", true);
-
-var color = d3.scale.quantize()
-  .range(["#2540A3", "#586436","#FCD32D", "#E95517", "#C61309"]);   // color range for meteorite mass size
-
-var radiusScale = d3.scale.linear()
-  .range([0, 12]);   // radius range for meteorite size
+      .classed("tooltip", true);
 
 
 // Load map and plot meteor data
@@ -115,10 +112,71 @@ d3.json(map110Url, function(error, world){
   d3.json(meteoriteUrl, function(error, data) {
     if (error) throw error;
 
-    // Remove data points with no lon/lat coordinates
-    var scrubbed = data.features.filter(function(val) {
-      // filter out data with no features.geometry.coordinates values
+    // data.features -> array of objects (type, geometry, properties)
+    // data.features[0].geometry.coordinates -> [lon, lat]
+    // data.properties -> .mass, .name
+
+    // Create color and radius scales based on meteorite mass
+    var massMax = d3.max(data.features, function(d) {
+      return d.properties.mass;
     });
+    var massMin = d3.min(data.features, function(d) {
+      return d.properties.mass;
+    });
+
+    console.log("Max mass: ", massMax);
+    console.log("Min mass: ", massMin);
+
+    var colorScale = d3.scaleQuantize()
+          .domain([massMin, massMax])
+          .range(["#00CBE7", "#00DA3C", "#F4F328", "#FD8603", "#DF151A"]);  // color range for meteorite mass size
+
+    var radiusScale = d3.scaleLog()
+      .domain([massMin, massMax])
+      .range([1, 12]);   // radius range for meteorite size
+
+
+    g.selectAll(".meteorite")
+        .data(data.features)
+      .enter().append("circle")
+        .classed("meteorite", true)
+        .attr("r", function(d) {
+          return radiusScale(d.properties.mass)
+        })
+        .attr("fill", function(d) {
+          return colorScale(d.properties.mass);
+        })
+        .style("opacity", 0.7)
+        // .style("border", function(d) {
+        //   return colorScale(d.properties.mass);
+        // })
+        .attr("transform", function (d) {
+            if(d.geometry.coordinates) {
+              return 'translate(' +
+                projection([d.geometry.coordinates[0],
+                            d.geometry.coordinates[1]]) + ')';
+            }
+        })
+        .attr("d", geoPath)
+        /*.on("mouseover", function(d) {
+          var dataPoint = "<div class='text-center'><strong>" +
+                          d.properties.name + "</strong><br />" +
+                           "Mass: "+ d.properties.mass + "<br />" +
+                           "Year: " + d.properties.year.slice(0, 5) +
+                          "</div>";
+          tooltip.transition()
+            .style('opacity', .9)
+          tooltip.html(dataPoint)
+            .style("left", (d3.event.pageX + 5) + "px")
+            .style("top", (d3.event.pageY - 28) + "px")
+          d3.select(this).style('opacity', 0.5)
+        })
+        .on("mouseout", function(d) {
+          tooltip.transition()
+            .style("opacity", 0);
+          d3.select(this).style('opacity', 1);
+        })
+        */
   });
 
 });
