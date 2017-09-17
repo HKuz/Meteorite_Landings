@@ -1,12 +1,8 @@
-// World data: https://raw.githubusercontent.com/mbostock/topojson/master/examples/world-50m.json
+// Good examples and theory of rotating globes:
+// Spinning globe: https://bl.ocks.org/mbostock/4183330
+// Spinning globe with interpolation: https://bl.ocks.org/jasondavies/4183701
+// Article about rotating the world: https://www.jasondavies.com/maps/rotate/
 
-// example: https://bl.ocks.org/d3noob/5193723
-
-// spinning globe: https://bl.ocks.org/mbostock/4183330
-
-// https://www.jasondavies.com/maps/rotate/
-
-// spinning globe with interpolation: https://bl.ocks.org/jasondavies/4183701
 
 // Basic Set-up
 var width = 960,
@@ -38,12 +34,6 @@ var geoPath = d3.geoPath()
 
 var graticule = d3.geoGraticule();
 
-// Draw the graticule lines
-svg.append("path")
-    .datum(graticule)
-    .attr("class", "graticule")
-    .attr("d", geoPath);
-
 var g = svg.append("g");
 
 // Fill in globe (water color)
@@ -53,6 +43,11 @@ g.append("circle")
     .attr("cy", height / 2)
     .attr("r", projection.scale());
 
+// Draw the graticule lines
+svg.append("path")
+    .datum(graticule)
+    .attr("class", "graticule")
+    .attr("d", geoPath);
 
 // Get the Earth to Spin
 
@@ -135,120 +130,13 @@ d3.json(map110Url, function(error, world){
 
 
 // Zoom Behavior
-svg.call(d3.zoom().on('zoom', zoomed));
-
-/*
-var zoom = d3.behavior.zoom()
-    .scaleExtent([1, 10])
-    .on("zoom", function() {
-      g.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-    });
-
-svg.call(zoom)
-   .on("mousedown.zoom", null);
-*/
+svg.call(d3.zoom().on("zoom", zoomed)); // WORKS
 
 
-/*
-var drag = d3.behavior.drag()
-            .on("dragstart", dragstarted)
-            .on("drag", dragged)
-            .on("dragend", dragended);
 
-svg.call(drag);
+// var zoom = d3.behavior.zoom()
+//     .scaleExtent([1, 10])
+//     .on("zoom", zoomed);
 
-var p_init, o_init;
-function dragstarted() {
-  p_init = projection.invert(d3.mouse(this));
-  o_init = projection.rotate();
-  context.clearRect(0, 0, width, height);
-  d3.event.preventDefault();
-  svg.insert("path")
-     .attr("d", path);
-}
-
-function dragged() {
-  var p_new = projection.invert(d3.mouse(this));
-  o_init = projection.rotate();
-  var o_new = [lambda(p_new[0]), phi(p_new[1])];
-    //var o1 = eulerAngles(gpos0, gpos1, o0);
-    projection.rotate(o_new);
-
-  svg.selectAll("path").attr("d", path);
-}
-
-function dragended() {
-  context.clearRect(0, 0, width, height);
-  getOverlay(overlay);
-  svg.selectAll(".point").remove();
-}
-*/
-
-/*
-var gpos0, o0;
-//var p0, p1;
-
-function dragstarted(){
-    gpos0 = projection.invert(d3.mouse(this));
-    o0 = projection.rotate();
-  //p0 = d3.mouse(this);
-    svg.insert("path")
-             .datum({type: "Point", coordinates: gpos0})
-             .attr("class", "point")
-             .attr("d", path);
-}
-
-function dragged(){
-    var gpos1 = projection.invert(d3.mouse(this));
-
-    o0 = projection.rotate();
-    //var o1 = eulerAngles(gpos0, gpos1, o0);
-    //projection.rotate(o1);
-
-  var o1 = [lambda(gpos0[0]), phi(gpos0[1])];
-  projection.rotate(o1);
-  //p0 = d3.mouse(this);
-  //projection.rotate([lambda(p0[0]), phi(p0[1])]);
-
-    svg.selectAll(".point")
-            .datum({type: "Point", coordinates: gpos1});
-  svg.selectAll("path").attr("d", path);
-
-}
-
-function dragended(){
-    //p0 = d3.mouse(this);
-  svg.selectAll(".point").remove();
-}
-*/
-
-/*
-svg.on("mousemove", function() {
-  var p = d3.mouse(this);
-  projection.rotate([lambda(p[0]), phi(p[1])]);
-  svg.selectAll("path").attr("d", path);
-});
-*/
-
-/*
-var point_init;
-svg.on("mousedown", function() {
-      point_init = [d3.event.pageX, d3.event.pageY];
-      context.clearRect(0, 0, width, height);
-      d3.event.preventDefault();
-})
-   .on("mousemove", function() {
-      if (point_init) {
-        point_init = [d3.event.pageX, d3.event.pageY];
-        projection.rotate([lambda(point_init[0]), phi(point_init[1])]);
-        svg.selectAll("path").attr("d", path);
-      }
-   })
-   .on("mouseup", function() {
-      if (point_init) {
-        context.clearRect(0, 0, width, height);
-        getOverlay(overlay);
-        point_init = null;
-     }
-});
-*/
+// svg.call(zoom)
+//    .on("mousedown.zoom", null);
