@@ -61,6 +61,7 @@ footer {
   stroke: $countryOutline;
   stroke-opacity: .3;
   stroke-width: 1px;
+  pointer-events: all;
 }
 
 .graticule-outline {

@@ -8,6 +8,9 @@ h1 {
   text-align: center;
   font-family: "Helvetica Neue"; }
 
+#map {
+  margin: auto; }
+
 svg {
   cursor: grab; }
 
@@ -23,7 +26,8 @@ footer {
   fill: none;
   stroke: #fff;
   stroke-opacity: .3;
-  stroke-width: 1px; }
+  stroke-width: 1px;
+  pointer-events: all; }
 
 .graticule-outline {
   fill: #0B108C;

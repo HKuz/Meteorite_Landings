@@ -4,10 +4,12 @@
 // Article about rotating the world: https://www.jasondavies.com/maps/rotate/
 
 
-// Basic Setup
+// Basic Set-up
 var width = 960,
 height = 500,
 scale = 250,
+// storedX = 0,
+// storedY = 0,
 origin = {
   x: 0,
   y: -20
@@ -33,25 +35,23 @@ var geoPath = d3.geoPath()
 
 var graticule = d3.geoGraticule();
 
-// Add group for land, water, and graticules (lon/lat lines)
-var g = svg.append("g").datum({
-  x: 0,
-  y: 0
-});
+// Add group for water and countries
+var g = svg.append("g");
 
 g.append("circle")
     .attr("class", "graticule-outline")
     .attr("cx", width / 2)
     .attr("cy", height / 2)
-    .attr("r", projection.scale())
+    .attr("r", projection.scale());
 
-// Draw the graticules (on top of land and water)
-g.append("path")
+// Draw the graticule lines (on top of group)
+svg.append("path")
     .datum(graticule)
     .attr("class", "graticule")
     .attr("d", geoPath);
 
-// Zoom and rotation behavior for the Earth
+// Get the Earth to Spin
+
 var lambda = d3.scaleLinear()
     .domain([0, width])
     .range([-180, 180]);
@@ -60,36 +60,39 @@ var phi = d3.scaleLinear()
     .domain([0, height])
     .range([90, -90]);
 
-function dragged(d) {
-  var r = {
-      x: lambda((d.x = d3.event.x)),
-      y: phi((d.y = d3.event.y))
-  };
-  projection.rotate([origin.x + r.x, origin.y + r.y]);
-  updatePaths(svg, graticule, geoPath);
-};
 
 function zoomed() {
   var transform = d3.event.transform;
-  var k = Math.sqrt(100 / projection.scale());
-  projection.scale(scale * transform.k)
+  var r = {
+    x: lambda(transform.x),
+    y: phi(transform.y)
+  };
+  var k = Math.sqrt(100 / projection.scale()); // scale / projection.scale()?
+  if (d3.event.sourceEvent.wheelDelta) {
+    projection.scale(scale * transform.k)
+    transform.x = storedX;
+    transform.y = storedY;
+  } else {
+    projection.rotate([origin.x + r.x, origin.y + r.y]);
+    storedX = transform.x;
+    storedY = transform.y;
+  }
   updatePaths(svg, graticule, geoPath);
 };
 
+
 function updatePaths(svg, graticule, geoPath) {
   svg.selectAll("path.graticule")
-    .datum(graticule)
-    .attr("d", geoPath);
+     .datum(graticule)
+     .attr("d", geoPath);
 
   g.selectAll("path.country")
-    .attr("d", geoPath);
-
-  g.selectAll("circle.graticule-outline")
-    .attr("r", projection.scale());
+     .attr("d", geoPath);
 };
 
 
-// Tooltip and Meteor scales:
+// Tooltip and Meteor scales
+/*
 var tooltip = d3.select('#tooltip')
   .classed("tooltip", true);
 
@@ -98,9 +101,10 @@ var color = d3.scale.quantize()
 
 var radiusScale = d3.scale.linear()
   .range([0, 12]);   // radius range for meteorite size
+*/
 
+// Load Map and Meteor Data
 
-// Load map and plot meteor data
 d3.json(map110Url, function(error, world){
   if (error) throw error;
 
@@ -124,6 +128,14 @@ d3.json(map110Url, function(error, world){
 });
 
 
-// Zoom, drag, and rotate behavior
-svg.call(d3.zoom().on("zoom", zoomed));
-g.call(d3.drag().on("drag", dragged));
+// Zoom Behavior
+svg.call(d3.zoom().on("zoom", zoomed)); // WORKS
+
+
+
+// var zoom = d3.behavior.zoom()
+//     .scaleExtent([1, 10])
+//     .on("zoom", zoomed);
+
+// svg.call(zoom)
+//    .on("mousedown.zoom", null);
