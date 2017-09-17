@@ -1,0 +1,94 @@
+// Google fonts
+@import url(https://fonts.googleapis.com/css?family=Cabin+Condensed);
+
+
+// Variables
+$headerFonts: 'Helvetica Neue';
+$textFonts: 'Cabin Condensed', 'Helvetica Neue', sans-serif;
+$black: #000;
+$white: #fff;
+$lightGray: #b8b8b8;
+$dark: #0E2A3D;
+$headerColor: $lightGray;
+$backgroundColor: $dark;
+$tooltipColor: $black;
+$tooltipBG: $lightGray;
+$countryFill: $lightGray;
+$countryOutline: $white;
+$graticuleFill: #0B108C;
+
+$bg_image: 'http://www.nasa.gov/sites/default/files/thumbnails/image/hubble_friday_04152016.jpg';
+
+// Mixins
+@mixin borderRad($radius) {
+  -moz-border-radius: $radius;
+  -webkit-border-radius: $radius;
+  border-radius: $radius;
+}
+
+
+// CSS
+body {
+  font-family: $textFonts;
+  background: url($bg_image);
+}
+
+h1 {
+  color: $headerColor;
+  text-align: center;
+  font-family: $headerFonts;
+}
+
+svg {
+  cursor: grab;
+}
+
+footer {
+  color: $headerColor;
+  font-size: 12px;
+  padding: 10px;
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+}
+
+
+// D3 Styling
+
+.graticule {
+  fill: none;
+  stroke: $countryOutline;
+  stroke-opacity: .3;
+  stroke-width: 1px;
+}
+
+.graticule-outline {
+  fill: $graticuleFill;
+  stroke: $countryOutline;
+  stroke-width: 1.5px;
+  opacity: 0.5;
+}
+
+.country {
+  fill: $countryFill;
+  stroke: $countryOutline;
+  stroke-width: .5px;
+  stroke-linejoin: round;
+}
+
+text {
+  font-size: 18px;
+  font-weight: bold;
+  text-anchor: middle;
+}
+
+.tooltip {
+  position: absolute;
+  padding: 10px;
+  color: $tooltipColor;
+  background-color: $tooltipBG;
+  opacity: 0;
+  @include borderRad(5px);
+}
+

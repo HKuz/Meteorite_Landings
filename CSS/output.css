@@ -1,0 +1,55 @@
+@import url(https://fonts.googleapis.com/css?family=Cabin+Condensed);
+body {
+  font-family: "Cabin Condensed", "Helvetica Neue", sans-serif;
+  background: url("http://www.nasa.gov/sites/default/files/thumbnails/image/hubble_friday_04152016.jpg"); }
+
+h1 {
+  color: #b8b8b8;
+  text-align: center;
+  font-family: "Helvetica Neue"; }
+
+svg {
+  cursor: grab; }
+
+footer {
+  color: #b8b8b8;
+  font-size: 12px;
+  padding: 10px; }
+  footer a {
+    text-decoration: none;
+    color: inherit; }
+
+.graticule {
+  fill: none;
+  stroke: #fff;
+  stroke-opacity: .3;
+  stroke-width: 1px; }
+
+.graticule-outline {
+  fill: #0B108C;
+  stroke: #fff;
+  stroke-width: 1.5px;
+  opacity: 0.5; }
+
+.country {
+  fill: #b8b8b8;
+  stroke: #fff;
+  stroke-width: .5px;
+  stroke-linejoin: round; }
+
+text {
+  font-size: 18px;
+  font-weight: bold;
+  text-anchor: middle; }
+
+.tooltip {
+  position: absolute;
+  padding: 10px;
+  color: #000;
+  background-color: #b8b8b8;
+  opacity: 0;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  border-radius: 5px; }
+
+/*# sourceMappingURL=output.css.map */
