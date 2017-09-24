@@ -29,14 +29,9 @@ var projection = d3.geoOrthographic()
     .clipAngle(90);
 
 var geoPath = d3.geoPath()
-    .projection(projection)
-    .pointRadius(function(d) {
-       return d.radius;
-    });
+    .projection(projection);
 
 var graticule = d3.geoGraticule();
-
-// var circle = d3.geoCircle();
 
 // Add group for land, water, and graticules (lon/lat lines)
 var g = svg.append("g").datum({
@@ -92,17 +87,15 @@ function updatePaths(svg, graticule, geoPath) {
   g.selectAll("circle.graticule-outline")
     .attr("r", projection.scale());
 
-  g.selectAll("path.meteorite")
-    .attr("d", geoPath);
-  // g.selectAll("circle.meteorite")
-  //   .attr("transform", function (d) {
-  //           if(d.geometry.coordinates) {
-  //             var lon = d.geometry.coordinates[0];
-  //             var lat = d.geometry.coordinates[1];
-  //             return 'translate(' +
-  //               projection([lon, lat]) + ')';
-  //           }
-  //   }); // TODO: Hide meteorites when location off globe
+  g.selectAll("circle.meteorite")
+    .attr("transform", function (d) {
+            if(d.geometry.coordinates) {
+              var lon = d.geometry.coordinates[0];
+              var lat = d.geometry.coordinates[1];
+              return 'translate(' +
+                projection([lon, lat]) + ')';
+            }
+    }); // TODO: Hide meteorites when location off globe
 };
 
 
@@ -148,55 +141,7 @@ d3.json(map110Url, function(error, world){
       .domain([massMin, massMax])
       .range([1, 12]);   // radius range for meteorite size
 
-    g.selectAll("path.meteorite")
-        .data(data.features)
-      .enter().append("path")
-        .datum(function(d) {
-          // console.log(d.geometry);
-          if (d.geometry) {
-            return {"type": "Point",
-                    "coordinates": d.geometry.coordinates,
-                    "radius": radiusScale(d.properties.mass)};
-          }
-        })
-        // .datum(function(d) {
-        //   return (circle
-        //           .origin([d.geometry.coordinates[0], d.geometry.coordinates[1]])
-        //           .angle(5));
-        // })
-        .attr("class", "meteorite")
-        .attr("d", geoPath)
-        // .attr("fill", function(d) {
-        //   return colorScale(d.properties.mass);
-        // })
-        .style("opacity", 0.7)
-        // .on("mouseover", function(d) {
-        //   var dataPoint = "<div class='text-center'><strong>" +
-        //                   d.properties.name + "</strong><br />" +
-        //                    "Mass: "+ d.properties.mass + "<br />" +
-        //                    "Year: " + d.properties.year.slice(0, 4) +
-        //                   "</div>";
-        //   tooltip.transition()
-        //     .style("opacity", .9)
-        //   tooltip.html(dataPoint)
-        //     .style("left", (d3.event.pageX + 5) + "px")
-        //     .style("top", (d3.event.pageY - 28) + "px")
-        //   d3.select(this).style("opacity", 0.5)
-        // })
-        // .on("mouseout", function(d) {
-        //   tooltip.transition()
-        //     .style("opacity", 0);
-        //   d3.select(this).style("opacity", 1);
-        // })
-        // .attr("transform", function (d) {
-        //     if(d.geometry.coordinates) {
-        //       return 'translate(' +
-        //         projection([d.geometry.coordinates[0],
-        //                     d.geometry.coordinates[1]]) + ')';
-        //     }
-        // })
 
-    /*
     g.selectAll(".meteorite")
         .data(data.features)
       .enter().append("circle")
@@ -232,8 +177,7 @@ d3.json(map110Url, function(error, world){
                 projection([d.geometry.coordinates[0],
                             d.geometry.coordinates[1]]) + ')';
             }
-        })*/
-
+        })
   });
 
 });
