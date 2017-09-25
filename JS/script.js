@@ -117,7 +117,7 @@ d3.json(map110Url, function(error, world){
     var tooltip = d3.select("#tooltip")
       .classed("tooltip", true);
 
-    // Create color and radius scales based on meteorite mass
+    // Create color and radius scales for meteorites based on mass
     var massMax = d3.max(data.features, function(d) {
       return d.properties.mass;
     });
@@ -130,16 +130,17 @@ d3.json(map110Url, function(error, world){
 
     var colorScale = d3.scaleQuantize()
           .domain([massMin, massMax])
-          .range(["#00CBE7", "#00DA3C", "#F4F328", "#FD8603", "#DF151A"]);  // color range for meteorite mass size
+          .range(["#4E0600", "#6A0900", "#930900", "#B50600", "#DD0004"]); // Source: http://www.colourlovers.com/palette/2544843/Reds_of_all_Shades
 
-    var radiusScale = d3.scaleLinear()
+    var radiusScale = d3.scaleQuantize()
       .domain([massMin, massMax])
-      .range([1, 7]);   // radius range for meteorite size
+      .range([1, 1.5, 1.75, 2.5, 3]);
 
     var meteorites = g.selectAll("path.meteorite")
         .data(data.features)
       .enter().append("path")
         .attr("fill", function(d) {
+          // Couldn't access d.properties.mass after .datum definition
           if (d.properties.mass) {
             return colorScale(d.properties.mass);
           } else {
@@ -150,7 +151,7 @@ d3.json(map110Url, function(error, world){
           if (d.geometry && d.properties.mass) {
             return circle
                     .center(d.geometry.coordinates)
-                    .radius(2)();  // TODO: scale to size of meteorite
+                    .radius(radiusScale(d.properties.mass))();  // TODO: scale to size of meteorite
                     // .radius(radiusScale(d.properties.mass))();
           }
         })
@@ -158,7 +159,7 @@ d3.json(map110Url, function(error, world){
         .attr("d", geoPath)
 
     meteorites
-      .style("opacity", 0.7)
+      .style("opacity", 0.6)
       .on("mouseover", function(d) {
         console.log(d.properties.name);
         var dataPoint = "<div class='text-center'><strong>" +
