@@ -11,6 +11,9 @@ h1 {
 svg {
   cursor: grab; }
 
+svg:active {
+  cursor: grabbing; }
+
 footer {
   color: #b8b8b8;
   font-size: 12px;
