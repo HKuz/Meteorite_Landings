@@ -38,9 +38,9 @@ footer {
   stroke-width: .5px;
   stroke-linejoin: round; }
 
-/*.meteorite {
-  fill: red;
-}*/
+.meteorite {
+  pointer-events: all; }
+
 text {
   font-size: 18px;
   font-weight: bold;

@@ -30,13 +30,10 @@ var projection = d3.geoOrthographic()
 
 var geoPath = d3.geoPath()
     .projection(projection)
-    .pointRadius(function(d) {
-       return d.radius;
-    });
 
 var graticule = d3.geoGraticule();
 
-// var circle = d3.geoCircle();
+var circle = d3.geoCircle();
 
 // Add group for land, water, and graticules (lon/lat lines)
 var g = svg.append("g").datum({
@@ -94,15 +91,6 @@ function updatePaths(svg, graticule, geoPath) {
 
   g.selectAll("path.meteorite")
     .attr("d", geoPath);
-  // g.selectAll("circle.meteorite")
-  //   .attr("transform", function (d) {
-  //           if(d.geometry.coordinates) {
-  //             var lon = d.geometry.coordinates[0];
-  //             var lat = d.geometry.coordinates[1];
-  //             return 'translate(' +
-  //               projection([lon, lat]) + ')';
-  //           }
-  //   }); // TODO: Hide meteorites when location off globe
 };
 
 
@@ -144,57 +132,52 @@ d3.json(map110Url, function(error, world){
           .domain([massMin, massMax])
           .range(["#00CBE7", "#00DA3C", "#F4F328", "#FD8603", "#DF151A"]);  // color range for meteorite mass size
 
-    var radiusScale = d3.scaleLog()
+    var radiusScale = d3.scaleLinear()
       .domain([massMin, massMax])
-      .range([1, 12]);   // radius range for meteorite size
+      .range([1, 7]);   // radius range for meteorite size
 
-    g.selectAll("path.meteorite")
+    var meteorites = g.selectAll("path.meteorite")
         .data(data.features)
       .enter().append("path")
-        .datum(function(d) {
-          // console.log(d.geometry);
-          if (d.geometry) {
-            return {"type": "Point",
-                    "coordinates": d.geometry.coordinates,
-                    "radius": radiusScale(d.properties.mass)};
+        .attr("fill", function(d) {
+          if (d.properties.mass) {
+            return colorScale(d.properties.mass);
+          } else {
+            return "black";
           }
         })
-        // .datum(function(d) {
-        //   return (circle
-        //           .origin([d.geometry.coordinates[0], d.geometry.coordinates[1]])
-        //           .angle(5));
-        // })
+        .datum(function(d) {
+          if (d.geometry && d.properties.mass) {
+            return circle
+                    .center(d.geometry.coordinates)
+                    .radius(2)();  // TODO: scale to size of meteorite
+                    // .radius(radiusScale(d.properties.mass))();
+          }
+        })
         .attr("class", "meteorite")
         .attr("d", geoPath)
-        // .attr("fill", function(d) {
-        //   return colorScale(d.properties.mass);
-        // })
-        .style("opacity", 0.7)
-        // .on("mouseover", function(d) {
-        //   var dataPoint = "<div class='text-center'><strong>" +
-        //                   d.properties.name + "</strong><br />" +
-        //                    "Mass: "+ d.properties.mass + "<br />" +
-        //                    "Year: " + d.properties.year.slice(0, 4) +
-        //                   "</div>";
-        //   tooltip.transition()
-        //     .style("opacity", .9)
-        //   tooltip.html(dataPoint)
-        //     .style("left", (d3.event.pageX + 5) + "px")
-        //     .style("top", (d3.event.pageY - 28) + "px")
-        //   d3.select(this).style("opacity", 0.5)
-        // })
-        // .on("mouseout", function(d) {
-        //   tooltip.transition()
-        //     .style("opacity", 0);
-        //   d3.select(this).style("opacity", 1);
-        // })
-        // .attr("transform", function (d) {
-        //     if(d.geometry.coordinates) {
-        //       return 'translate(' +
-        //         projection([d.geometry.coordinates[0],
-        //                     d.geometry.coordinates[1]]) + ')';
-        //     }
-        // })
+
+    meteorites
+      .style("opacity", 0.7)
+      .on("mouseover", function(d) {
+        console.log(d.properties.name);
+        var dataPoint = "<div class='text-center'><strong>" +
+                        d.properties.name + "</strong><br />" +
+                         "Mass: "+ d.properties.mass + "<br />" +
+                         "Year: " + d.properties.year.slice(0, 4) +
+                        "</div>";
+        tooltip.transition()
+          .style("opacity", .9)
+        tooltip.html(dataPoint)
+          .style("left", (d3.event.pageX + 5) + "px")
+          .style("top", (d3.event.pageY - 28) + "px")
+        d3.select(this).style("opacity", 0.5)
+      })
+      .on("mouseout", function(d) {
+        tooltip.transition()
+          .style("opacity", 0);
+        d3.select(this).style("opacity", 0.7);
+      })
 
     /*
     g.selectAll(".meteorite")
