@@ -11,7 +11,8 @@ scale = 250,
 origin = {
   x: 0,
   y: -20
-};
+},
+opacity = 0.6;
 
 var map110Url = "https://d3js.org/world-110m.v1.json";
 var meteoriteUrl = "https://raw.githubusercontent.com/FreeCodeCamp/ProjectReferenceData/master/meteorite-strike-data.json";
@@ -91,6 +92,16 @@ function updatePaths(svg, graticule, geoPath) {
 
   g.selectAll("path.meteorite")
     .attr("d", geoPath);
+
+  g.selectAll("circle.invisibleCircs")
+    .attr("transform", function (d) {
+            if(d.geometry.coordinates) {
+              var lon = d.geometry.coordinates[0];
+              var lat = d.geometry.coordinates[1];
+              return 'translate(' +
+                projection([lon, lat]) + ')';
+            }
+    }); // TODO: Hide meteorites when location off globe
 };
 
 
@@ -113,35 +124,6 @@ d3.json(map110Url, function(error, world){
     // data.features[0].geometry.coordinates -> [lon, lat]
     // data.properties -> .mass, .name
 
-    // Setup tooltip
-    var tooltip = d3.select("#tooltip")
-      .classed("tooltip", true);
-
-    // Define mouse events for tooltip
-    function mouseOver(d) {
-      // console.log(d.properties.name);
-      // var dataPoint = "<div class='text-center'><strong>" +
-      //                 d.properties.name + "</strong><br />" +
-      //                  "Mass: "+ d.properties.mass + "<br />" +
-      //                  "Year: " + d.properties.year.slice(0, 4) +
-      //                 "</div>";
-      var dataPoint = "<div class='text-center'><strong>HELLO!</strong><br />" +
-                       "Mass: null<br />" +
-                       "Year: 1999</div>";
-      tooltip.transition()
-        .style("opacity", .9)
-      tooltip.html(dataPoint)
-        .style("left", (d3.event.pageX + 5) + "px")
-        .style("top", (d3.event.pageY - 28) + "px")
-      d3.select(this).style("opacity", 0.5)
-    };
-
-    function mouseOut(d) {
-      tooltip.transition()
-        .style("opacity", 0);
-      d3.select(this).style("opacity", 0.6);
-    }
-
     // Create color and radius scales for meteorites based on mass
     var massMax = d3.max(data.features, function(d) {
       return d.properties.mass;
@@ -161,31 +143,87 @@ d3.json(map110Url, function(error, world){
       .domain([massMin, massMax])
       .range([1, 1.5, 1.75, 2.5, 3]);
 
+    // Setup tooltip and mouse event handlers
+    var tooltip = d3.select("#tooltip")
+      .classed("tooltip", true);
+
+    // infoForTooltip = [];
+    // data.features.forEach((e, i) => {
+    //   infoForTooltip.push({
+    //     "name": e.properties.name,
+    //     "mass": e.properties.mass,
+    //     "year": e.properties.year
+    //   });
+    // });
+
+    // index = infoForTooltip.findIndex(x => x.name == "Acapulco");
+    // console.log(index);
+    // console.log(infoForTooltip[index].name);
+    // console.log(infoForTooltip[index].mass);
+    // console.log(infoForTooltip[index].year);
+
+    // Draw meteorites on map
     var meteorites = g.selectAll("path.meteorite")
         .data(data.features)
       .enter().append("path")
-        .attr("fill", function(d) {
-          // Couldn't access d.properties.mass after .datum definition
+        .attr("fill", d => {
+          // Couldn't access d.properties.mass after datum definition
           if (d.properties.mass) {
             return colorScale(d.properties.mass);
           } else {
             return "black";
           }
         })
-        .datum(function(d) {
+        .attr("class", "meteorite")
+        .datum(d => {
           if (d.geometry && d.properties.mass) {
             return circle
                     .center(d.geometry.coordinates)
                     .radius(radiusScale(d.properties.mass))();
           }
         })
-        .attr("class", "meteorite")
         .attr("d", geoPath)
-        .style("opacity", 0.6);
+        .style("opacity", opacity);
 
-    meteorites
-        .on("mouseover", mouseOver)
-        .on("mouseout", mouseOut);
+    // Draw invisble circles for tooltip information
+    var invisibleCircs = g.selectAll(".invisibleCircs")
+        .data(data.features)
+      .enter().append("circle")
+        .classed("invisibleCircs", true)
+        .attr("r", 5)
+        // .attr("r", function(d) {
+        //   return radiusScale(d.properties.mass)
+        // })
+        .attr("fill", "green")
+        .style("opacity", 0.3)
+      .on("mouseover", d => {
+        console.log("Lat:", d.geometry.coordinates[1]);
+        console.log("Lon:", d.geometry.coordinates[0]);
+        console.log(projection([d.geometry.coordinates[0], d.geometry.coordinates[1]]));
+        var dataPoint = "<div class='text-center'><strong>" +
+                        d.properties.name + "</strong><br />" +
+                         "Mass: "+ d.properties.mass + "<br />" +
+                         "Year: " + d.properties.year.slice(0, 4) +
+                        "</div>";
+        tooltip.transition()
+          .style("opacity", .9)
+        tooltip.html(dataPoint)
+          .style("left", (d3.event.pageX + 5) + "px")
+          .style("top", (d3.event.pageY - 28) + "px")
+        d3.select(this).style("opacity", 0.5)
+      })
+      .on("mouseout", d => {
+        tooltip.transition()
+          .style("opacity", 0);
+        d3.select(this).style("opacity", opacity);
+      })
+      .attr("transform", d => {
+          if(d.geometry.coordinates) {
+            return 'translate(' +
+              projection([d.geometry.coordinates[0],
+                          d.geometry.coordinates[1]]) + ')';
+          }
+      });
 
   });  // End meteorite data .json call
 
