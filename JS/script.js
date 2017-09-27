@@ -167,7 +167,33 @@ d3.json(map110Url, function(error, world){
           }
         })
         .attr("d", geoPath)
+        .style("opacity", 0);
+
+    // Add transition to draw the meteorites
+    var m = d3.transition()
+        .duration(1000)
+        .ease(d3.easeElasticIn);
+
+    d3.selectAll(".meteorite").transition(m)
+        .delay((d, i) => {
+          return i * 5;
+        })
+        .datum(d => {
+          return circle.radius;
+        })
         .style("opacity", opacity);
+
+    // gdpChart.transition()
+    //   .attr('height', function(d) {
+    //     return yScale(d);
+    //   })
+    //   .attr('y', function(d) {
+    //     return chartHeight - yScale(d);
+    //   })
+    //   .delay(function(d, i){
+    //     return i * 10;
+    //   })
+    //   .duration(500).ease('elastic')
 
     // Draw invisble circles for tooltip information
     tooltipPath.pointRadius(d => {
