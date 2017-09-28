@@ -178,9 +178,6 @@ d3.json(map110Url, function(error, world){
         .delay((d, i) => {
           return i * 5;
         })
-        .datum(d => {
-          return circle.radius;
-        })
         .style("opacity", opacity);
 
     // gdpChart.transition()
