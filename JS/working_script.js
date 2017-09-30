@@ -81,8 +81,8 @@ var createWorld = function(mapUrl, meteoriteUrl) {
         return d.properties.mass;
       });
 
-      // console.log("Max mass: ", massMax);
-      // console.log("Min mass: ", massMin);
+      console.log("Max mass: ", massMax);
+      console.log("Min mass: ", massMin);
 
       var colorScale = d3.scaleQuantize()
         .domain([massMin, massMax])
@@ -103,12 +103,17 @@ var createWorld = function(mapUrl, meteoriteUrl) {
       // Function to generate the meteorite circles on Earth's surface
       //   This is necessary so fill color and tooltip mouseover events
       //   still have access to the data (vs. creating geoCircle with datum)
-      var circlePath = function(d) {
-        if (d.geometry && d.properties.mass) {
+      var circlePath = function(d, r) {
+        if (d.properties.mass) {
+          r = r || radiusScale(d.properties.mass);
+        } else {
+          r = 0;
+        }
+        if (d.geometry) {
               var cc = circle
                         .center(d.geometry.coordinates)
-                        .radius(radiusScale(d.properties.mass))();
-            }
+                        .radius(r)();
+        }
         return geoPath(cc);
       }
 
@@ -148,17 +153,19 @@ var createWorld = function(mapUrl, meteoriteUrl) {
           .duration(1000)
           .ease(d3.easePolyOut)
           .delay(function(d, i) {
-            return i * 10;
+            return i * 8;
           })
           .style("opacity", opacity)
           .attrTween("d", function(d, i) {
-            // massBasedRadius = d.properties.mass ? radiusScale(d.properties.mass) : 0;
-            // rinterp = d3.interpolate(0, massBasedRadius);
-            // var fn = function(t) {
-            //   d.r = rinterp(t);
-            //   return circlePath(d, d.r);
-            // };
-            // return fn;
+            var massBasedRadius = d.properties.mass ? radiusScale(d.properties.mass) : 0;
+            var biggestR = radiusScale(massMax + 300);
+            var rinterp = d3.interpolate(biggestR, massBasedRadius);
+            // var rinterp = d3.interpolate(0, biggestR);
+            var fn = function(t) {
+              d.r = rinterp(t);
+              return circlePath(d, d.r);
+            };
+            return fn;
           });
 
       // Define zoom and rotation behavior for the Earth
@@ -198,7 +205,9 @@ var createWorld = function(mapUrl, meteoriteUrl) {
           .attr("r", projection.scale());
 
         g.selectAll("path.meteorite")
-          .attr("d", circlePath);
+          .attr("d", function(d) {
+            return circlePath(d, d.r);
+          });
       };
 
       // Zoom, drag, and rotate behavior
