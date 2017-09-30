@@ -75,57 +75,69 @@ var createWorld = function(mapUrl, meteoriteUrl) {
 
       // Create color and radius scales for meteorites based on mass
       var massMax = d3.max(data.features, function(d) {
-        return d.properties.mass;
+        return +d.properties.mass;
       });
       var massMin = d3.min(data.features, function(d) {
-        return d.properties.mass;
+        return +d.properties.mass;
       });
 
-      console.log("Max mass: ", massMax);
-      console.log("Min mass: ", massMin);
+      // console.log("Total m:", data.features.length);  //1000
+      // console.log("Max mass: ", massMax);  // 23000000
+      // console.log("Min mass: ", massMin);  // 0
+
+      // Bucket meteorites by mass
+      var massBucket = function(mass) {
+        if (mass <= 1000) {
+          return 1;
+        } else if (mass <= 5000) {
+          return 2;
+        } else if (mass <= 10000) {
+          return 3;
+        } else if (mass <= 1000000) {
+          return 4;
+        } else {
+          return 5;
+        }
+      };
 
       var colorScale = d3.scaleQuantize()
-        .domain([massMin, massMax])
+        .domain([1, 5])
         .range(["#EBA612", "#EB9112", "#EB6412", "#EB4A12", "#930900"]); // Source: http://www.colourlovers.com/palette/2313798/shades_of_fire
 
       var radiusScale = d3.scaleQuantize()
-        .domain([massMin, massMax])
-        .range([1, 1.5, 1.75, 2, 2.5]);
+        .domain([0, 5])
+        .range([0, 1, 1.5, 1.75, 2, 5]);
 
       // Setup tooltip
       var tooltip = d3.select("#tooltip")
         .classed("tooltip", true);
 
-      var tScale = d3.scaleQuantize()
-        .domain([massMin, massMax])
-        .range([3, 4, 5, 7, 8]);
-
       // Function to generate the meteorite circles on Earth's surface
-      //   This is necessary so fill color and tooltip mouseover events
+      //   Necessary to be a function so fill color and tooltip mouseover events
       //   still have access to the data (vs. creating geoCircle with datum)
       var circlePath = function(d, r) {
-        if (d.properties.mass) {
-          r = r || radiusScale(d.properties.mass);
+        if (+d.properties.mass) {
+          r = r || radiusScale(massBucket(+d.properties.mass));
         } else {
           r = 0;
         }
         if (d.geometry) {
               var cc = circle
-                        .center(d.geometry.coordinates)
-                        .radius(r)();
+                .center(d.geometry.coordinates)
+                .radius(r)();
         }
         return geoPath(cc);
-      }
+      };
 
-      // Draw meteorites on map
+      // Draw meteorites on the map
       var meteorites = g.selectAll("path.meteorite")
           .data(data.features)
         .enter().append("path")
           .attr("class", "meteorite")
           .attr("d", circlePath)
           .attr("fill", function(d) {
-            if (d.properties.mass) {
-              return colorScale(d.properties.mass);
+            if (+d.properties.mass) {
+              return colorScale(massBucket(+d.properties.mass));
             } else {
               return "transparent";
             }
@@ -148,7 +160,7 @@ var createWorld = function(mapUrl, meteoriteUrl) {
               .style("opacity", 0);
           });
 
-      // Add transition to draw the meteorites
+      // Add transition to animate the meteorites crashing into Earth
       d3.selectAll(".meteorite").transition()
           .duration(1000)
           .ease(d3.easePolyOut)
@@ -157,10 +169,8 @@ var createWorld = function(mapUrl, meteoriteUrl) {
           })
           .style("opacity", opacity)
           .attrTween("d", function(d, i) {
-            var massBasedRadius = d.properties.mass ? radiusScale(d.properties.mass) : 0;
-            var biggestR = radiusScale(massMax + 300);
-            var rinterp = d3.interpolate(biggestR, massBasedRadius);
-            // var rinterp = d3.interpolate(0, biggestR);
+            var massBasedRadius = +d.properties.mass ? radiusScale(massBucket(+d.properties.mass)) : 0;
+            var rinterp = d3.interpolate(massBasedRadius + 3, massBasedRadius);
             var fn = function(t) {
               d.r = rinterp(t);
               return circlePath(d, d.r);
